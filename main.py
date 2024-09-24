@@ -92,21 +92,17 @@ def new_game():
     global yaw, pitch, bullets, world_map, mini_map
     yaw = 0
     pitch = 0
-    bullets.clear()  # Очистите список пуль
+    bullets.clear() 
 
-    # Генерация случайных размеров карты
-    width = random.randint(15, 50)  # Ширина карты от 15 до 50 клеток
-    height = random.randint(15, 50)  # Высота карты от 15 до 50 клеток
+    width = random.randint(15, 50)
+    height = random.randint(15, 50)
     
-    # Вероятности для генерации карты
-    wall_prob = random.uniform(0.2, 0.4)  # Вероятность стены от 20% до 40%
-    room_prob = random.uniform(0.05, 0.15)  # Вероятность комнаты (если понадобится)
-    opening_prob = random.uniform(0.1, 0.2)  # Вероятность проходов от 10% до 20%
+    wall_prob = random.uniform(0.2, 0.4)
+    room_prob = random.uniform(0.05, 0.15)
+    opening_prob = random.uniform(0.1, 0.2)
 
-    # Генерация случайной карты с этими параметрами
     random_map = generate_random_map(width, height, wall_prob, room_prob, opening_prob)
 
-    # Создание мира из сгенерированной карты
     world_map = set()
     mini_map = set()
     for j, row in enumerate(random_map):
@@ -114,13 +110,12 @@ def new_game():
             if char == "W":
                 world_map.add((i * TILE, j * TILE))
 
-    # Запуск игрового цикла
     game_loop()
 
 
 def game_menu():
     global show_game_menu
-    show_game_menu = True  # Show the game menu when called
+    show_game_menu = True
     selected_item = 0
 
     while show_game_menu:
@@ -131,9 +126,9 @@ def game_menu():
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
-                    selected_item = (selected_item - 1) % 3  # Убедитесь, что здесь 3 элемента
+                    selected_item = (selected_item - 1) % 3
                 elif event.key == pygame.K_DOWN:
-                    selected_item = (selected_item + 1) % 3  # Убедитесь, что здесь 3 элемента
+                    selected_item = (selected_item + 1) % 3
                 elif event.key == pygame.K_RETURN:
                     if selected_item == 0:  # Resume option
                         show_game_menu = False  # Exit menu and continue game
@@ -148,29 +143,29 @@ def game_menu():
 # Game loop
 def game_loop():
     global yaw, pitch, bullets, os
-    pygame.font.init()  # Initialize the font system
-    font = pygame.font.SysFont('Arial', 30)  # Set the font and size for the ammo counter
+    pygame.font.init()
+    font = pygame.font.SysFont('Arial', 30)
     step_sound = pygame.mixer.Sound(os.path.join(sound_folder, "shah.wav"))
     ops_sound = pygame.mixer.Sound(os.path.join(sound_folder, "beg.wav"))
-    out_of_ammo_sound = pygame.mixer.Sound(os.path.join(sound_folder, "out_of_ammo.wav"))  # Load out-of-ammo sound
+    out_of_ammo_sound = pygame.mixer.Sound(os.path.join(sound_folder, "out_of_ammo.wav"))
     player = Player(check_collision)
     drawing = Drawing(sc)
-    game_paused = False  # Flag to control the game state
-    shot_tierd = 0  # Counter for shots fired
-    max_shots = 5   # Maximum shots before needing to reload
-    can_shoot = True  # Flag to control if the player can shoot
+    game_paused = False
+    shot_tierd = 0
+    max_shots = 5   
+    can_shoot = True 
 
     screen_width = sc.get_width()
 
-    bullet_img = pygame.image.load(os.path.join( "bullet_icon.png")).convert_alpha()  # Load bullet image
-    bullet_img = pygame.transform.scale(bullet_img, (38, 38))  # Resize bullet image to 38x38
+    bullet_img = pygame.image.load(os.path.join( "bullet_icon.png")).convert_alpha() 
+    bullet_img = pygame.transform.scale(bullet_img, (38, 38))
 
     while True:
-        pygame.mouse.set_visible(False)  # Hide cursor
-        pygame.event.set_grab(True)  # Lock cursor in the window
+        pygame.mouse.set_visible(False)
+        pygame.event.set_grab(True)
 
-        remaining_ammo = max_shots - shot_tierd  # Calculate remaining ammo
-        ammo_text = font.render(f"Ammo: {remaining_ammo}/{max_shots}", True, (255, 255, 255))  # Render ammo text (white color)
+        remaining_ammo = max_shots - shot_tierd
+        ammo_text = font.render(f"Ammo: {remaining_ammo}/{max_shots}", True, (255, 255, 255))
 
         text_rect = ammo_text.get_rect()
         text_rect.topright = (screen_width - 10, 10)
@@ -181,39 +176,38 @@ def game_loop():
                 sys.exit()
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:  # Press ESC to toggle the game menu
+                if event.key == pygame.K_ESCAPE:
                     game_menu()
-                if event.key == pygame.K_r:  # Press 'R' to reload
-                    shot_tierd = 0  # Reset shot counter
-                    can_shoot = True  # Allow shooting again
-                    out_of_ammo_sound.play()  # Play out-of-ammo sound
+                if event.key == pygame.K_r: 
+                    shot_tierd = 0
+                    can_shoot = True
+                    out_of_ammo_sound.play()
 
-            if not game_paused:  # Only process input if the game is not paused
-                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left mouse button
-                    if can_shoot:  # Check if the player can still shoot
-                        if shot_tierd < max_shots:  # Allow shooting if shot count is less than max
+            if not game_paused:
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    if can_shoot:
+                        if shot_tierd < max_shots:
                             if not player.gun_sound_playing:
                                 player.gun_sound.play()
                                 player.shoot()
-                                player.gun_sound_playing = True  # Set flag
-                                bullet = Bullet(player.pos, player.angle, speed=10)  # Create bullet
-                                bullets.append(bullet)  # Add bullet to the list
-                                shot_tierd += 1  # Increment the shot counter
+                                player.gun_sound_playing = True
+                                bullet = Bullet(player.pos, player.angle, speed=10)
+                                bullets.append(bullet)
+                                shot_tierd += 1
                         if shot_tierd >= max_shots:
-                            can_shoot = False  # Disable shooting when max shots are reached
-                            out_of_ammo_sound.play()  # Play out-of-ammo sound
-                if event.type == pygame.MOUSEBUTTONUP and event.button == 1:  # Left mouse button released
-                    player.gun_sound_playing = False  # Reset flag
+                            can_shoot = False
+                            out_of_ammo_sound.play()
+                if event.type == pygame.MOUSEBUTTONUP and event.button == 1: 
+                    player.gun_sound_playing = False
 
         if game_paused:
-            game_menu()  # Show the game menu if paused
-            continue  # Skip the rest of the loop until the game is resumed
+            game_menu()
+            continue
 
         mouse_x, mouse_y = pygame.mouse.get_rel()
-        yaw += mouse_x * 0.1  # Turn left and right
-        pitch -= mouse_y * 0.1  # Turn up and down
+        yaw += mouse_x * 0.1 
+        pitch -= mouse_y * 0.1
 
-        # Limit the pitch angle (for example, between -90 and 90 degrees)
         pitch = max(-90, min(90, pitch))
         player.angle = math.radians(yaw)
 
@@ -221,11 +215,10 @@ def game_loop():
         player.update_bullets()
 
         for bullet in bullets:
-            if bullet.update():  # If bullet should be removed
-                bullets.remove(bullet)  # Remove bullet
+            if bullet.update():
+                bullets.remove(bullet)
                 continue
 
-            # Create rect for bullet
             bullet_rect = pygame.Rect(bullet.position[0], bullet.position[1], 5, 5)
 
         sc.fill(BLACK)
@@ -235,12 +228,11 @@ def game_loop():
         drawing.fps(clock)
         player.draw_bullets(sc)
         drawing.draw_mini_map(player.pos, player.angle)
-        ammo_text = font.render(f"{remaining_ammo}/{max_shots}", True, (255, 255, 255))  # White color
-        sc.blit(bullet_img, (screen_width - bullet_img.get_width() - 50, 10))  # Position bullet image
-        sc.blit(ammo_text, (screen_width - ammo_text.get_width() - 10, 10))  # Position ammo text
+        ammo_text = font.render(f"{remaining_ammo}/{max_shots}", True, (255, 255, 255))
+        sc.blit(bullet_img, (screen_width - bullet_img.get_width() - 50, 10))
+        sc.blit(ammo_text, (screen_width - ammo_text.get_width() - 10, 10))
         pygame.display.flip()
         clock.tick(FPS)
 
-# Run the main menu and then the game loop
 main_menu()
 game_loop()

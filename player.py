@@ -11,28 +11,25 @@ pygame.mixer.init()
 
 class Player:
     def __init__(self, check_collision):
-        self.x, self.y = player_pos  # Стартовая позиция
-        self.angle = player_angle  # Стартовый угол
-        self.speed = player_speed  # Базовая скорость
+        self.x, self.y = player_pos 
+        self.angle = player_angle 
+        self.speed = player_speed 
         self.check_collision = check_collision
         self.crouch_height = 0
-        self.vertical_speed = 0  # Вертикальная скорость
-        self.on_ground = True  # Находится ли игрок на земле
-        self.pistol_image = pygame.image.load('gun.png')  # Загружаем изображение
-        self.pistol_rect = self.pistol_image.get_rect()  # Прямоугольник для пистолета
-        # Установите позицию пистолета относительно игрока
+        self.vertical_speed = 0  
+        self.on_ground = True 
+        self.pistol_image = pygame.image.load('gun.png') 
+        self.pistol_rect = self.pistol_image.get_rect() 
         self.pistol_rect.center = (self.x, self.y)
         self.pitch = 0
         self.bullets = []
-        self.shots_fired = 0  # Count shots fired
-        self.max_shots = 5    # Maximum shots before needing to reload
+        self.shots_fired = 0
+        self.max_shots = 5
 
-        # Загрузка звуков
         self.step_sound = pygame.mixer.Sound(os.path.join(sound_folder, "shah.wav"))
         self.run_sound = pygame.mixer.Sound(os.path.join(sound_folder, "beg.wav"))
         self.gun_sound = pygame.mixer.Sound(os.path.join(sound_folder, "bang.wav"))
 
-        # Флаги состояния игрока
         self.is_walking = False
         self.is_running = False
         self.is_shooting = False
@@ -41,17 +38,17 @@ class Player:
         self.gun_sound_playing = False
 
     def shoot(self):
-        bullet = Bullet(self.pos, self.angle, speed=10)  # Создаем пулю
-        self.bullets.append(bullet)  # Добавляем пулю в список
+        bullet = Bullet(self.pos, self.angle, speed=10)
+        self.bullets.append(bullet) 
 
     def update_bullets(self):
-        for bullet in self.bullets[:]:  # Итерируем по копии списка
-            if bullet.update():  # Обновляем пулю
+        for bullet in self.bullets[:]:
+            if bullet.update():
                 self.bullets.remove(bullet)
 
     def draw_bullets(self, sc):
         for bullet in self.bullets:
-            bullet.draw(sc, self.pos, self.angle)  # Передаем позицию и угол игрока
+            bullet.draw(sc, self.pos, self.angle)
 
 
     @property
@@ -61,12 +58,10 @@ class Player:
     def movement(self):
         keys = pygame.key.get_pressed()
 
-        # Переменные для будущих новых позиций игрока
         new_x, new_y = self.x, self.y
 
-        walking = False  # Инициализация переменной walking
+        walking = False
 
-        # Движение вперёд и назад с учётом угла взгляда
         if keys[pygame.K_w]:
             new_x += self.speed * math.cos(self.angle)
             new_y += self.speed * math.sin(self.angle)
@@ -75,8 +70,6 @@ class Player:
             new_x -= self.speed * math.cos(self.angle)
             new_y -= self.speed * math.sin(self.angle)
             walking = True
-
-        # Движение влево и вправо
         if keys[pygame.K_a]:
             new_x -= self.speed * math.cos(self.angle + math.pi / 2)
             new_y -= self.speed * math.sin(self.angle + math.pi / 2)
@@ -86,52 +79,51 @@ class Player:
             new_y += self.speed * math.sin(self.angle + math.pi / 2)
             walking = True
 
-        self.base_speed = 1  # Базовая скорость
+        self.base_speed = 1
 
-        # Проверка нажатия клавиши Shift для бега
-        if keys[pygame.K_LSHIFT] and walking:  # Если игрок бежит и движется
-            self.speed = self.base_speed * 2  # Увеличиваем скорость
-            self.crouch_height = 0  # Игрок не может приседать при беге
-            if not self.run_sound_playing:  # Если звук бега не играет
-                self.run_sound.play(-1)  # Воспроизвести звук бега в цикле
+        if keys[pygame.K_LSHIFT] and walking:
+            self.speed = self.base_speed * 2 
+            self.crouch_height = 0
+            if not self.run_sound_playing:
+                self.run_sound.play(-1)
                 self.run_sound_playing = True
-            if self.step_sound_playing:  # Останавливаем шаги, если они играли
+            if self.step_sound_playing:
                 self.step_sound.stop()
                 self.step_sound_playing = False
             self.is_running = True
             self.is_walking = False
-        elif walking:  # Если игрок идёт, но не бежит
-            self.speed = self.base_speed  # Обычная скорость
-            if not self.step_sound_playing:  # Если звук шагов не играет
-                self.step_sound.play(-1)  # Воспроизвести шаги
+        elif walking:
+            self.speed = self.base_speed
+            if not self.step_sound_playing: 
+                self.step_sound.play(-1)
                 self.step_sound_playing = True
-            if self.run_sound_playing:  # Останавливаем бег, если он играл
+            if self.run_sound_playing:
                 self.run_sound.stop()
                 self.run_sound_playing = False
             self.is_walking = True
             self.is_running = False
-        else:  # Если игрок не двигается
-            if self.step_sound_playing:  # Останавливаем звук шагов
+        else:
+            if self.step_sound_playing:
                 self.step_sound.stop()
                 self.step_sound_playing = False
-            if self.run_sound_playing:  # Останавливаем звук бега
+            if self.run_sound_playing:
                 self.run_sound.stop()
                 self.run_sound_playing = False
             self.is_walking = False
             self.is_running = False
 
-        if keys[pygame.K_LCTRL] and not keys[pygame.K_LALT]:  # Обычное приседание
-            self.crouch_height = 50  # Смещение камеры вниз
-            self.speed = self.base_speed  # Обычная скорость при приседании
+        if keys[pygame.K_LCTRL] and not keys[pygame.K_LALT]:
+            self.crouch_height = 50
+            self.speed = self.base_speed
             if self.run_sound_playing:
                 self.run_sound.stop()
                 self.run_sound_playing = False
             if self.step_sound_playing:
                 self.step_sound.stop()
                 self.step_sound_playing = False
-        elif keys[pygame.K_LCTRL] and keys[pygame.K_LALT]:  # Приседание с Alt
-            self.crouch_height = 150  # Смещение камеры вниз
-            self.speed = self.base_speed  # Обычная скорость при приседании
+        elif keys[pygame.K_LCTRL] and keys[pygame.K_LALT]:
+            self.crouch_height = 150
+            self.speed = self.base_speed
             if self.run_sound_playing:
                 self.run_sound.stop()
                 self.run_sound_playing = False
@@ -139,9 +131,8 @@ class Player:
                 self.step_sound.stop()
                 self.step_sound_playing = False
         else:
-            self.crouch_height = 0  # Обычное состояние без приседания
+            self.crouch_height = 0
 
 
-        # Проверка коллизий перед обновлением позиции
         if not self.check_collision(new_x, new_y):
             self.x, self.y = new_x, new_y

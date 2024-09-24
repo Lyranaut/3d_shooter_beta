@@ -25,11 +25,10 @@ DIST = NUM_RAYS / (2 * math.tan(HALF_FOV))
 PROJ_COEFF = DIST * TILE
 SCALE = WIDTH / NUM_RAYS
 
-player_pos = (HALF_WIDTH, HALF_HEIGHT)  # Начальная позиция игрока в центре экрана
-player_angle = 0  # Начальный угол взгляда
-player_speed = 1  # Скорость движения
+player_pos = (HALF_WIDTH, HALF_HEIGHT)
+player_angle = 0 
+player_speed = 1
 
-# Определение цветов
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
