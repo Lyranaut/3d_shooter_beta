@@ -152,7 +152,7 @@ def game_loop():
     drawing = Drawing(sc)
     game_paused = False
     shot_tierd = 0
-    max_shots = 5   
+    max_shots = 7   
     can_shoot = True 
 
     screen_width = sc.get_width()

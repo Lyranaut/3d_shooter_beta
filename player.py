@@ -24,7 +24,7 @@ class Player:
         self.pitch = 0
         self.bullets = []
         self.shots_fired = 0
-        self.max_shots = 5
+        self.max_shots = 7
 
         self.step_sound = pygame.mixer.Sound(os.path.join(sound_folder, "shah.wav"))
         self.run_sound = pygame.mixer.Sound(os.path.join(sound_folder, "beg.wav"))
