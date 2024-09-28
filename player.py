@@ -29,6 +29,8 @@ class Player:
         self.step_sound = pygame.mixer.Sound(os.path.join(sound_folder, "shah.wav"))
         self.run_sound = pygame.mixer.Sound(os.path.join(sound_folder, "beg.wav"))
         self.gun_sound = pygame.mixer.Sound(os.path.join(sound_folder, "bang.wav"))
+        self.out_of_ammo_sound = pygame.mixer.Sound(os.path.join(sound_folder, "out_of_ammo.wav"))
+        self.r_sound = pygame.mixer.Sound(os.path.join(sound_folder, "r.wav"))
 
         self.is_walking = False
         self.is_running = False

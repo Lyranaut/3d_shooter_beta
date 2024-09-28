@@ -9,6 +9,7 @@ from drawing import Drawing
 from bullet import Bullet
 import random
 import os
+import time
 
 # Initialize Pygame
 pygame.init()
@@ -148,12 +149,22 @@ def game_loop():
     step_sound = pygame.mixer.Sound(os.path.join(sound_folder, "shah.wav"))
     ops_sound = pygame.mixer.Sound(os.path.join(sound_folder, "beg.wav"))
     out_of_ammo_sound = pygame.mixer.Sound(os.path.join(sound_folder, "out_of_ammo.wav"))
+    r_sound = pygame.mixer.Sound(os.path.join(sound_folder, "r.wav"))
     player = Player(check_collision)
     drawing = Drawing(sc)
     game_paused = False
     shot_tierd = 0
-    max_shots = 7   
-    can_shoot = True 
+    max_shots = 7
+    max_shots_rapid = 30  # Максимум патронов для скорострельного режима
+    max_shots_single = 7   # Максимум патронов для одиночного режима   
+    can_shoot = True
+    SINGLE_SHOT_MODE = 1
+    RAPID_FIRE_MODE = 2
+    current_fire_mode = SINGLE_SHOT_MODE
+    mode_text = "Одиночный"
+    last_shot_time = 0
+    shot_interval = 1
+    rapid_fire_interval = 0.005
 
     screen_width = sc.get_width()
 
@@ -181,24 +192,66 @@ def game_loop():
                 if event.key == pygame.K_r: 
                     shot_tierd = 0
                     can_shoot = True
-                    out_of_ammo_sound.play()
+                    r_sound.play()
 
             if not game_paused:
+                # Обработка выстрела при нажатии ЛКМ
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    current_time = time.time()
                     if can_shoot:
-                        if shot_tierd < max_shots:
-                            if not player.gun_sound_playing:
-                                player.gun_sound.play()
-                                player.shoot()
-                                player.gun_sound_playing = True
-                                bullet = Bullet(player.pos, player.angle, speed=10)
-                                bullets.append(bullet)
-                                shot_tierd += 1
-                        if shot_tierd >= max_shots:
-                            can_shoot = False
-                            out_of_ammo_sound.play()
-                if event.type == pygame.MOUSEBUTTONUP and event.button == 1: 
+                        if current_fire_mode == RAPID_FIRE_MODE:
+                            mode_text = "Скорострельный"
+                            if current_time - last_shot_time >= rapid_fire_interval:
+                                if shot_tierd < max_shots_rapid:
+                                    if not player.gun_sound_playing:
+                                        player.gun_sound.play()
+                                        player.shoot()
+                                        player.gun_sound_playing = True
+                                        bullet = Bullet(player.pos, player.angle, speed=10)
+                                        bullets.append(bullet)
+                                        shot_tierd += 1
+                                        last_shot_time = current_time
+                                if shot_tierd >= max_shots_rapid:
+                                    can_shoot = True
+                                    player.out_of_ammo_sound.play()
+                                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                                        player.out_of_ammo_sound.play()
+
+                        elif current_fire_mode == SINGLE_SHOT_MODE:
+                            mode_text = "Одиночный"
+                            if current_time - last_shot_time >= shot_interval:
+                                if shot_tierd < max_shots_single:
+                                    player.gun_sound.play()
+                                    player.shoot()
+                                    bullet = Bullet(player.pos, player.angle, speed=10)
+                                    bullets.append(bullet)
+                                    shot_tierd += 1
+                                    last_shot_time = current_time
+                                else:
+                                    out_of_ammo_sound.play()
+
+                # Обработка переключения режима стрельбы
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_1:
+                        current_fire_mode = RAPID_FIRE_MODE
+                        r_sound.play()
+                        mode_text = "Скорострельный"
+                        drawing.current_pistol = drawing.pistol_rapid  # Смена изображения сразу после переключения режима
+                        shot_tierd = 0  # Сбросить счетчик выстрелов
+                        max_shots = max_shots_rapid  # Установить максимальное количество патронов
+
+                    elif event.key == pygame.K_2:
+                        current_fire_mode = SINGLE_SHOT_MODE
+                        r_sound.play()
+                        mode_text = "Одиночный"
+                        drawing.current_pistol = drawing.pistol_single  # Смена изображения сразу после переключения режима
+                        shot_tierd = 0  # Сбросить счетчик выстрелов
+                        max_shots = max_shots_single  # Установить максимальное количество патронов
+
+                # Сброс звука после отпускания ЛКМ
+                if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                     player.gun_sound_playing = False
+
 
         if game_paused:
             game_menu()
@@ -229,8 +282,8 @@ def game_loop():
         player.draw_bullets(sc)
         drawing.draw_mini_map(player.pos, player.angle)
         ammo_text = font.render(f"{remaining_ammo}/{max_shots}", True, (255, 255, 255))
-        sc.blit(bullet_img, (screen_width - bullet_img.get_width() - 50, 10))
-        sc.blit(ammo_text, (screen_width - ammo_text.get_width() - 10, 10))
+        sc.blit(bullet_img, (screen_width - bullet_img.get_width() - 10, 10))
+        sc.blit(ammo_text, (screen_width - ammo_text.get_width() - 50, 10))
         pygame.display.flip()
         clock.tick(FPS)
 

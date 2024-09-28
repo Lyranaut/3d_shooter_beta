@@ -4,24 +4,31 @@ from ray_casting import ray_casting
 from map import *
 from player import *
 
+wall_color = random.choice(Colores)
+
+
 class Drawing:
     def __init__(self, sc):
         self.sc = sc
         self.font = pygame.font.SysFont('Arial', 36, bold=True)
-        self.pistol_image = pygame.image.load('gun.png').convert_alpha()
-        self.pistol_rect = self.pistol_image.get_rect()
+        self.pistol_single = pygame.image.load('gun.png').convert_alpha()  # Одиночный режим
+        self.pistol_rapid = pygame.image.load('gun2.png').convert_alpha()  # Скорострельный режим
         self.crosshair_image = pygame.image.load('snipe.png').convert_alpha()
         self.crosshair_rect = self.crosshair_image.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+
+        # Текущая картинка оружия (по умолчанию одиночный режим)
+        self.current_pistol = self.pistol_single
+        self.pistol_rect = self.current_pistol.get_rect()
 
     def background(self, crouch_height):
         pygame.draw.rect(self.sc, SKYBLUE, (0, 0 - crouch_height, WIDTH, HALF_HEIGHT))
         pygame.draw.rect(self.sc, GRAY, (0, HALF_HEIGHT - crouch_height, WIDTH, HALF_HEIGHT))
 
     def world(self, player_pos, player_angle, crouch_height):
-        ray_casting(self.sc, player_pos, player_angle, crouch_height)
-        self.pistol_rect.center = (player_pos[0], player_pos[1] - crouch_height)
+        ray_casting(self.sc, player_pos, player_angle, crouch_height, wall_color)
+        self.pistol_rect.center = (WIDTH // 2, HEIGHT - 100)  # Оружие всегда внизу в центре экрана
         self.draw_pistol()
-        self.draw_crosshair()
+        self.draw_crosshair(crouch_height)
 
     def draw_mini_map(self, player_pos, player_angle):
         mini_map_scale = 6
@@ -74,16 +81,24 @@ class Drawing:
 
     def draw_pistol(self):
         self.pistol_rect.center = (WIDTH // 2, HEIGHT - self.pistol_rect.height // 2 - 200)
-        self.sc.blit(self.pistol_image, self.pistol_rect)
+        self.sc.blit(self.current_pistol, self.pistol_rect)
 
-    def draw_crosshair(self):
+    def draw_crosshair(self, crouch_height):
         center_x = WIDTH // 2
         center_y = HEIGHT // 2
 
-        self.crosshair_rect.center = (center_x - 160, center_y - 20)
+        self.crosshair_rect.center = (center_x - 160, center_y - 20 - crouch_height)
         self.sc.blit(self.crosshair_image, self.crosshair_rect)
         
         print(f"Crosshair center: {self.crosshair_rect.center}")
+    
+    def switch_weapon(self, fire_mode):
+        if fire_mode == 1:  # Одиночный режим
+            self.current_pistol = self.pistol_single
+        elif fire_mode == 2:  # Скорострельный режим
+            self.current_pistol = self.pistol_rapid
+        # Обновляем прямоугольник для нового оружия
+        self.pistol_rect = self.current_pistol.get_rect(WIDTH // 2, HEIGHT - 100)
 
     def fps(self, clock):
         display_fps = str(int(clock.get_fps()))
