@@ -5,8 +5,6 @@ from settings import *
 WALL_COLORS = [
     (139, 69, 19),  # Brown
     (255, 0, 0),    # Red
-    (0, 255, 0),    # Green
-    (0, 0, 255),    # Blue
     (255, 255, 0),  # Yellow
     (255, 165, 0),  # Orange
     (128, 0, 128),  # Purple

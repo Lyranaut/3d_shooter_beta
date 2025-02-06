@@ -24,7 +24,6 @@ yaw = 0    # Horizontal angle (turn)
 bullets = []
 Colores = [RED, GREEN, BLUE, YELLOW, CYAN, MAGENTA, BLACK, WHITE, GRAY, ORANGE, PURPLE, PINK, BROWN, SKYBLUE]
 show_game_menu = False  # Initialize the game menu visibility
-
 sound_folder = os.path.join(os.path.dirname(__file__), 'sound')
 
 # Function to check collision with walls
@@ -39,12 +38,12 @@ def draw_main_menu(selected_item):
     
     item_height = font.get_height() + 20  # Height of text + extra spacing
     total_height = len(menu_items) * item_height  # Total height of the menu
-    start_y = (HEIGHT - total_height - 200) // 2  # Center vertically
+    start_y = ((HEIGHT - total_height - 200) // 2) - 170 # Center vertically
 
     for i, item in enumerate(menu_items):
         color = YELLOW if i == selected_item else WHITE
         text = font.render(item, True, color)
-        text_rect = text.get_rect(center=((WIDTH // 2) - 140, start_y + i * item_height + item_height // 2))
+        text_rect = text.get_rect(center=((WIDTH // 3) + 30, start_y + i * item_height + item_height // 2))
         sc.blit(text, text_rect)
 
     pygame.display.flip()
@@ -56,12 +55,12 @@ def draw_game_menu(selected_item):
     
     item_height = font.get_height() + 20  # Height of text + extra spacing
     total_height = len(menu_items) * item_height  # Total height of the menu
-    start_y = (HEIGHT - total_height - 200) // 2  # Center vertically
+    start_y = (HEIGHT - total_height - 200) // 2 - 170  # Center vertically
 
     for i, item in enumerate(menu_items):
         color = YELLOW if i == selected_item else WHITE
         text = font.render(item, True, color)
-        text_rect = text.get_rect(center=((WIDTH // 2) - 140, start_y + i * item_height + item_height // 2))
+        text_rect = text.get_rect(center=((WIDTH // 3) + 30, start_y + i * item_height + item_height // 2))
         sc.blit(text, text_rect)
 
     pygame.display.flip()
@@ -149,7 +148,7 @@ def game_loop():
     step_sound = pygame.mixer.Sound(os.path.join(sound_folder, "shah.wav"))
     ops_sound = pygame.mixer.Sound(os.path.join(sound_folder, "beg.wav"))
     out_of_ammo_sound = pygame.mixer.Sound(os.path.join(sound_folder, "out_of_ammo.wav"))
-    r_sound = pygame.mixer.Sound(os.path.join(sound_folder, "r.wav"))
+    r_sound = pygame.mixer.Sound(os.path.join(sound_folder, "out_of_ammo.wav"))
     player = Player(check_collision)
     drawing = Drawing(sc)
     game_paused = False

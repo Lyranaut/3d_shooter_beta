@@ -32,7 +32,9 @@ class Drawing:
 
     def draw_mini_map(self, player_pos, player_angle):
         mini_map_scale = 6
-        mini_map_radius = WIDTH // (3 * mini_map_scale)
+        mini_map_radius = WIDTH // (3 * mini_map_scale)  # Размер миникарты
+        x_offset = 40  # Увеличить отступ, если миникарта сместилась
+        y_offset = 40
         mini_map_surface = pygame.Surface((mini_map_radius * 2, mini_map_radius * 2), pygame.SRCALPHA)
         mini_map_surface.fill((0, 0, 0, 0))
 
@@ -56,7 +58,7 @@ class Drawing:
         player_circle_y = mini_map_radius
         pygame.draw.circle(mini_map_surface, (255, 0, 0), (player_circle_x, player_circle_y), 5)
 
-        cone_length = 50
+        cone_length = 10
         cone_width = 20
 
         cone_point_x = player_circle_x + cone_length * math.cos(player_angle)
@@ -80,14 +82,15 @@ class Drawing:
         self.sc.blit(mini_map_surface, (x_offset, y_offset))
 
     def draw_pistol(self):
-        self.pistol_rect.center = (WIDTH // 2, HEIGHT - self.pistol_rect.height // 2 - 200)
+        self.pistol_rect.center = (WIDTH // 3 + 125, HEIGHT - self.pistol_rect.height // 2 - 500)  # Сдвиг на 5 пикселей вправо
         self.sc.blit(self.current_pistol, self.pistol_rect)
+
 
     def draw_crosshair(self, crouch_height):
         center_x = WIDTH // 2
         center_y = HEIGHT // 2
 
-        self.crosshair_rect.center = (center_x - 160, center_y - 20 - crouch_height)
+        self.crosshair_rect.center = ((WIDTH // 3) + 30, HEIGHT // 2 - crouch_height - 10)
         self.sc.blit(self.crosshair_image, self.crosshair_rect)
         
         print(f"Crosshair center: {self.crosshair_rect.center}")
